@@ -34,7 +34,7 @@ RESOLVED: 0 / TOTAL: 3
 
 ### 4. 해소되는 즉시 문서·하네스에 반영한다 (Persistence)
 
-한 토픽이 결정되면 **다음 질문으로 넘어가기 전에** 설계문서(PRD/SRS/Tasks/Issues)와 에이전트 하네스(rules / `AGENTS.md` / `CLAUDE.md`)에 반영하고 Grill Ledger에 기록합니다. 결정을 대화 속에만 두지 않습니다.
+한 토픽이 결정되면 **다음 질문으로 넘어가기 전에** 설계문서(PRD/SRS/Tasks/Issues)와 에이전트 하네스에 반영하고 Grill Ledger에 기록합니다. 하네스는 규칙(`.cursor/rules` · `AGENTS.md` · `CLAUDE.md`)뿐 아니라 결정 성격에 따라 **skill · subagent · workflow/command · hook · MCP/설정**까지 포함합니다. 결정을 대화 속에만 두지 않습니다.
 
 ### 5. 언제든 멈추고 재개할 수 있다
 
@@ -166,7 +166,7 @@ curl -fsSL https://raw.githubusercontent.com/wild-mental/grill-it-skill/main/.ag
 |--------|------|
 | **Grill Ledger** | 결정 토픽의 단일 진척 원장 (`docs/grill/GRILL_LEDGER.md`). 상단에 `RESOLVED: n / TOTAL: m` grep 카운터. 토픽별 결정·반영 결과 기록 → 재개의 근거 |
 | **설계문서 반영** | PRD/SRS/Tasks/Issues 등 관련 문서를 결정대로 수정 |
-| **하네스 반영** | `.cursor/rules/*.mdc` · `AGENTS.md` · `CLAUDE.md` 등에 CORE 결정을 즉시 반영 |
+| **하네스 반영** | 결정 성격에 맞는 하네스 계층(rules · skills · subagents · workflows/commands · hooks · MCP/settings)에 CORE 결정을 즉시 수립·갱신 |
 
 | 결정 분류 | 정의 | 반영 |
 |-----------|------|------|
@@ -297,8 +297,9 @@ contract:
   one_topic_at_a_time=true
   each_question_includes_recommended_answer=true
   ledger_file=docs/grill/GRILL_LEDGER.md  # top counter "RESOLVED: n / TOTAL: m", resumable
-  on_resolve_persist=[update design docs, update harness if CORE, mark ledger RESOLVED with decision+applied, surface 반영 완료]
-  harness_targets=[.cursor/rules/*.mdc, AGENTS.md, CLAUDE.md, .claude/, .agents/]
+  on_resolve_persist=[update design docs, establish/update the matching harness layer if CORE (rule|skill|subagent|workflow/command|hook|mcp/settings), mark ledger RESOLVED with decision+applied, surface 반영 완료]
+  harness_layers=[rules, skills, subagents/agents, workflows/commands, hooks, mcp/settings]
+  harness_targets=[.cursor/rules/*.mdc, .cursor/skills/*, .cursor/commands/*, .cursor/hooks/|hooks.json, AGENTS.md, CLAUDE.md, .claude/skills/*, .claude/agents/*, .claude/commands/*, .claude/settings.json, .agents/skills/*, .agents/]
   decision_class=[CORE -> docs+harness required, MINOR -> ledger + one-line doc]
   resumable=true  # re-invoke continues from first UNRESOLVED topic
   stop_reasons=[ALL_RESOLVED, USER_PAUSED, BUDGET]
